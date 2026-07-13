@@ -176,7 +176,6 @@ public class MinioService {
 
     public boolean isDirectoryExist(String path) {
 
-        System.out.println("Checking directory: " + path);
 
         ListObjectsArgs args = ListObjectsArgs.builder()
                 .bucket("user-files")
