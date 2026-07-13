@@ -129,14 +129,11 @@ public class MinioService {
 
         try {
 
-            Iterable<Result<Item>> results =
-                    getObjects(prefix);
-
+            Iterable<Result<Item>> results = getObjects(prefix);
 
             for (Result<Item> result : results) {
 
                 Item item = result.get();
-
                 deleteFile(item.objectName());
             }
 
@@ -149,7 +146,6 @@ public class MinioService {
     public Iterable<Result<Item>> getDirectory(String prefix) {
 
         try {
-
             ListObjectsArgs args = ListObjectsArgs.builder()
                     .bucket("user-files")
                     .prefix(prefix)
