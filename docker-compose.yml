@@ -4,6 +4,8 @@ services:
 
   app:
     build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     container_name: cloud-storage-app
     ports:
       - "8080:8080"
