@@ -4,6 +4,7 @@ import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
 import io.minio.messages.Item;
+import moltecore.pet.cloud_storage.service.interfaces.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,12 +14,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Service
-public class MinioService {
+public class MinioStorageService implements StorageService {
 
     private final MinioClient minioClient;
 
     @Autowired
-    public MinioService(MinioClient minioClient) {
+    public MinioStorageService(MinioClient minioClient) {
         this.minioClient = minioClient;
     }
 
@@ -134,9 +135,13 @@ public class MinioService {
             for (Result<Item> result : results) {
 
                 Item item = result.get();
-                deleteFile(item.objectName());
+
+                if (!item.objectName().equals(prefix)) {
+                    deleteFile(item.objectName());
+                }
             }
 
+            deleteFile(prefix);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -221,6 +226,15 @@ public class MinioService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean isResourceExist(String objectName) {
+
+        if (isObjectExist(objectName)) {
+            return true;
+        }
+
+        return isDirectoryExist(objectName + "/");
     }
 
 

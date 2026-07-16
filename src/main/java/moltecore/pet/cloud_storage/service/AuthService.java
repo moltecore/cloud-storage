@@ -8,6 +8,8 @@ import moltecore.pet.cloud_storage.exceptions.ConflictException;
 import moltecore.pet.cloud_storage.mapper.UserMapper;
 import moltecore.pet.cloud_storage.models.User;
 import moltecore.pet.cloud_storage.repositories.UsersRepositories;
+
+import moltecore.pet.cloud_storage.service.interfaces.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,15 +26,15 @@ public class AuthService {
     private final UsersRepositories userRepositorie;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final MinioService minioService;
+    private final StorageService storageService;
     private final AuthenticationManager authenticationManager;
 
     @Autowired
-    public AuthService(UsersRepositories userRepositorie, UserMapper userMapper, PasswordEncoder passwordEncoder, MinioService minioService,  AuthenticationManager authenticationManager) {
+    public AuthService(UsersRepositories userRepositorie, UserMapper userMapper, PasswordEncoder passwordEncoder, MinioStorageService minioStorageService, AuthenticationManager authenticationManager) {
         this.userRepositorie = userRepositorie;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
-        this.minioService = minioService;
+        this.storageService = minioStorageService;
         this.authenticationManager = authenticationManager;
     }
 
@@ -78,9 +80,6 @@ public class AuthService {
         } catch (DataIntegrityViolationException e) {
             throw new ConflictException("Пользователь уже существует");
         }
-        minioService.createDirectory("user-" + user.getId() + "-files/");
+        storageService.createDirectory("user-" + user.getId() + "-files/");
     }
-
-
-
 }

@@ -47,8 +47,8 @@ public class ResourceService {
         return removeService.moveResource(id, from, to);
     }
 
-    public ResourceDTO upload(int id, String path, List<MultipartFile> files) {
-        return uploadService.uploadObject(id, path, files);
+    public List<ResourceDTO> upload(int id, String path, List<MultipartFile> files) {
+        return uploadService.upload(id, path, files);
     }
 
     public ResourceDTO createFolder(int id, String path) {

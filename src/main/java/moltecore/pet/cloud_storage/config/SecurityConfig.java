@@ -36,20 +36,25 @@ public class SecurityConfig {
                 .securityContext(context -> context.requireExplicitSave(false))
 
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(HttpServletResponse.SC_FORBIDDEN))
                 )
 
                 .userDetailsService(userDetailsService)
 
-
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/sign-in", "/api/auth/sign-up", "/",
+                        .requestMatchers("/api/auth/sign-in",
+                                "/api/auth/sign-up",
+                                "/",
                                 "/index.html",
-                                "/assets/**", "/config.js"
+                                "/assets/**", "/config.js", "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )
-
 
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
@@ -62,6 +67,7 @@ public class SecurityConfig {
     public PasswordEncoder getPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();

@@ -6,7 +6,7 @@ import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import moltecore.pet.cloud_storage.DTO.DownloadDTO;
 import moltecore.pet.cloud_storage.exceptions.NotFoundException;
-import moltecore.pet.cloud_storage.service.MinioService;
+import moltecore.pet.cloud_storage.service.interfaces.StorageService;
 import moltecore.pet.cloud_storage.util.StoragePathUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -18,18 +18,17 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 public class DownloadService {
 
-    private final MinioService minioService;
-
+    private final StorageService storageService;
 
     private DownloadDTO downloadFile(int id, String path) {
 
         String objectPath = StoragePathUtils.buildStoragePath(id, path);
 
-        if (!minioService.isObjectExist(objectPath)) {
+        if (!storageService.isObjectExist(objectPath)) {
             throw new NotFoundException("Такого файла не существует");
         }
 
-        GetObjectResponse file = minioService.downloadFile(objectPath);
+        GetObjectResponse file = storageService.downloadFile(objectPath);
 
         StreamingResponseBody body = outputStream -> {
             try (file) {
@@ -45,7 +44,7 @@ public class DownloadService {
 
         String objectPath = StoragePathUtils.buildStoragePath(id, path);
 
-        if (!minioService.isDirectoryExist(objectPath)) {
+        if (!storageService.isDirectoryExist(objectPath)) {
             throw new NotFoundException("Такой папки не существует");
         }
 
@@ -53,7 +52,7 @@ public class DownloadService {
 
             try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
 
-                Iterable<Result<Item>> results = minioService.getObjects(objectPath);
+                Iterable<Result<Item>> results = storageService.getObjects(objectPath);
 
 
                 for (Result<Item> result : results) {
@@ -71,7 +70,7 @@ public class DownloadService {
 
                     if (!objectName.endsWith("/")) {
 
-                        try (GetObjectResponse file = minioService.downloadFile(objectName)) {
+                        try (GetObjectResponse file = storageService.downloadFile(objectName)) {
 
                             file.transferTo(zipOutputStream);
                         }

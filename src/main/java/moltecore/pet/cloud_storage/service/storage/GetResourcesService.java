@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 import moltecore.pet.cloud_storage.DTO.ResourceDTO;
 import moltecore.pet.cloud_storage.exceptions.BadRequestException;
 import moltecore.pet.cloud_storage.exceptions.NotFoundException;
-import moltecore.pet.cloud_storage.service.MinioService;
+import moltecore.pet.cloud_storage.service.MinioStorageService;
+import moltecore.pet.cloud_storage.service.interfaces.StorageService;
 import moltecore.pet.cloud_storage.util.StoragePathUtils;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GetResourcesService {
 
-    private final MinioService minioService;
+    private final StorageService storageService;
 
     public ResourceDTO getResourceInfo(int id, String path) {
 
@@ -26,7 +27,7 @@ public class GetResourcesService {
 
         if (path.endsWith("/")) {
 
-            if (!minioService.isDirectoryExist(objectPath)) {
+            if (!storageService.isDirectoryExist(objectPath)) {
                 throw new NotFoundException("Папка не существует");
             }
 
@@ -39,11 +40,11 @@ public class GetResourcesService {
 
         } else {
 
-            if (!minioService.isObjectExist(objectPath)) {
+            if (!storageService.isObjectExist(objectPath)) {
                 throw new NotFoundException("Файл не существует");
             }
 
-            StatObjectResponse stat = minioService.getObjectInfo(objectPath);
+            StatObjectResponse stat = storageService.getObjectInfo(objectPath);
 
             return new ResourceDTO(
                     StoragePathUtils.getParent(path),
@@ -58,7 +59,7 @@ public class GetResourcesService {
 
         String objectPath = StoragePathUtils.buildStoragePath(id, path);
 
-        if (!minioService.isDirectoryExist(objectPath)) {
+        if (!storageService.isDirectoryExist(objectPath)) {
             throw new NotFoundException("Папка не найдена");
         }
 
@@ -69,7 +70,7 @@ public class GetResourcesService {
         try {
 
             Iterable<Result<Item>> results =
-                    minioService.getDirectory(objectPath);
+                    storageService.getDirectory(objectPath);
 
 
             for (Result<Item> result : results) {
@@ -121,7 +122,7 @@ public class GetResourcesService {
 
         String prefix = "user-" + id + "-files/";
 
-        Iterable<Result<Item>> results = minioService.getObjects(prefix);
+        Iterable<Result<Item>> results = storageService.getObjects(prefix);
 
         try {
 

@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import moltecore.pet.cloud_storage.DTO.ResourceDTO;
 import moltecore.pet.cloud_storage.exceptions.ConflictException;
 import moltecore.pet.cloud_storage.exceptions.NotFoundException;
-import moltecore.pet.cloud_storage.service.MinioService;
+import moltecore.pet.cloud_storage.service.interfaces.StorageService;
 import moltecore.pet.cloud_storage.util.StoragePathUtils;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RemoveService {
 
-    private final MinioService minioService;
+    private final StorageService storageService;
 
     public ResourceDTO moveResource(int id, String from, String to) {
 
@@ -24,24 +24,24 @@ public class RemoveService {
 
 
         if (from.endsWith("/")) {
-            if (!minioService.isDirectoryExist(oldPath)) {
+            if (!storageService.isDirectoryExist(oldPath)) {
                 throw new NotFoundException("Папка не найдена");
             }
 
         } else {
-            if (!minioService.isObjectExist(oldPath)) {
+            if (!storageService.isObjectExist(oldPath)) {
                 throw new NotFoundException("Файл не найден");
             }
         }
 
         if (to.endsWith("/")) {
 
-            if (minioService.isDirectoryExist(newPath)) {
+            if (storageService.isDirectoryExist(newPath)) {
                 throw new ConflictException("Ресурс уже существует");
             }
 
         } else {
-            if (minioService.isObjectExist(newPath)) {
+            if (storageService.isObjectExist(newPath)) {
                 throw new ConflictException("Ресурс уже существует");
             }
         }
@@ -61,11 +61,11 @@ public class RemoveService {
 
         else {
 
-            minioService.copyObject(oldPath, newPath);
-            minioService.deleteFile(oldPath);
+            storageService.copyObject(oldPath, newPath);
+            storageService.deleteFile(oldPath);
 
             StatObjectResponse stat =
-                    minioService.getObjectInfo(newPath);
+                    storageService.getObjectInfo(newPath);
 
             return new ResourceDTO(
                     StoragePathUtils.getParent(to),
@@ -78,7 +78,7 @@ public class RemoveService {
 
     private void moveDirectory(String oldPath, String newPath) {
 
-        Iterable<Result<Item>> objects = minioService.getObjects(oldPath);
+        Iterable<Result<Item>> objects = storageService.getObjects(oldPath);
 
         try {
             for (Result<Item> result : objects) {
@@ -92,16 +92,16 @@ public class RemoveService {
                 System.out.println(oldPath);
                 System.out.println(newPath);
 
-                minioService.copyObject(oldObject, newObject);
+                storageService.copyObject(oldObject, newObject);
             }
 
             Iterable<Result<Item>> oldObjects =
-                    minioService.getObjects(oldPath);
+                    storageService.getObjects(oldPath);
 
             for (Result<Item> result : oldObjects) {
 
                 Item item = result.get();
-                minioService.deleteFile(item.objectName());
+                storageService.deleteFile(item.objectName());
             }
 
 

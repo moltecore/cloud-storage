@@ -4,8 +4,8 @@ public class StoragePathUtils {
 
     public static String buildStoragePath(int id, String path) {
 
-        if (path == null) {
-            path = "";
+        if (path == null || path.isBlank()) {
+            return "user-" + id + "-files/";
         }
 
         path = path.strip();
@@ -16,6 +16,17 @@ public class StoragePathUtils {
 
         return "user-" + id + "-files/" + path;
     }
+
+
+    public static String normalizeDirectoryPath(String path) {
+
+        if (path == null || path.isBlank()) {
+            return "";
+        }
+
+        return path.endsWith("/") ? path : path + "/";
+    }
+
 
     public static String getParent(String path) {
 
@@ -29,28 +40,22 @@ public class StoragePathUtils {
         return path.substring(0, index + 1);
     }
 
+
     public static String getName(String path) {
 
         path = normalize(path);
-
         int index = path.lastIndexOf("/");
 
         return path.substring(index + 1);
     }
 
+
     private static String normalize(String path) {
+
         if (path.endsWith("/")) {
             return path.substring(0, path.length() - 1);
         }
+
         return path;
-    }
-
-    public static String normalizeDirectoryPath(String path) {
-
-        if (path.endsWith("/")) {
-            return path;
-        }
-
-        return path + "/";
     }
 }

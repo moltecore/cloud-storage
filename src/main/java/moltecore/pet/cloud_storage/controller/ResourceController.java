@@ -43,7 +43,7 @@ public class ResourceController {
     public ResponseEntity<?> upload(@RequestParam("path") String path, @RequestParam("object") List<MultipartFile> files, @AuthenticationPrincipal UsersDetails userDetails
     ) {
 
-        ResourceDTO response = resourceService.upload(userDetails.getId(), path, files);
+        List<ResourceDTO> response = resourceService.upload(userDetails.getId(), path, files);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

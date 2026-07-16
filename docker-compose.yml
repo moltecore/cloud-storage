@@ -2,33 +2,61 @@ version: '3.8'
 
 services:
 
-  postgres:
-    image: postgres:latest
-    container_name: postgres
+  app:
+    build: .
+    container_name: cloud-storage-app
     ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: CloudFileStorage
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_started
+      minio:
+          condition: service_healthy
+      redis:
+          condition: service_started
     restart: unless-stopped
 
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: CloudFileStorage
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+
 
   minio:
     image: minio/minio:latest
     container_name: minio
     ports:
-      - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: password123
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
     command: server /data --console-address ":9001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
+
+
+volumes:
+  postgres_data:
+  minio_data:
 

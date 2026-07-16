@@ -2,7 +2,7 @@ package moltecore.pet.cloud_storage.service.storage;
 
 import lombok.RequiredArgsConstructor;
 import moltecore.pet.cloud_storage.exceptions.NotFoundException;
-import moltecore.pet.cloud_storage.service.MinioService;
+import moltecore.pet.cloud_storage.service.interfaces.StorageService;
 import moltecore.pet.cloud_storage.util.StoragePathUtils;
 import org.springframework.stereotype.Service;
 
@@ -10,31 +10,29 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DeleteService {
 
-    private final MinioService minioService;
+    private final StorageService storageService;
 
     public void removeObject(int id, String path) {
 
         String objectPath = StoragePathUtils.buildStoragePath(id, path);
 
-
-
         if (path.endsWith("/")) {
 
-            if (!minioService.isDirectoryExist(objectPath)) {
+            if (!storageService.isDirectoryExist(objectPath)) {
                 throw new NotFoundException("Папка не найдена");
             }
 
-            minioService.deleteDirectory(objectPath);
+            storageService.deleteDirectory(objectPath);
 
             return;
         }
 
 
-        if (!minioService.isObjectExist(objectPath)) {
+        if (!storageService.isObjectExist(objectPath)) {
             throw new NotFoundException("Файл не найден");
         }
 
-        minioService.deleteFile(objectPath);
+        storageService.deleteFile(objectPath);
     }
 
 }
